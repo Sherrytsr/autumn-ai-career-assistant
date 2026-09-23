@@ -1,98 +1,58 @@
-# vinext-starter
+# 秋招 AI 简历 & 面经助手
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+面向秋招大学生的可交互产品 Demo，包含：
 
-## Prerequisites
+- JD 岗位需求解析
+- 简历匹配度评分
+- STAR 法则定向改写
+- 脱敏面经检索、去重与固定来源引用
 
-- Node.js `>=22.13.0`
+当前 Demo 使用浏览器端规则与 24 篇内置脱敏面经运行，不依赖外部模型服务，也不会长期保存用户简历。
 
-## Quick Start
+## 本地运行
+
+需要 Node.js 22 或更高版本。
 
 ```bash
 npm install
+npm run dev:static
+```
+
+静态生产构建：
+
+```bash
+npm run build:static
+```
+
+生成结果位于 `dist-static/`。
+
+## 部署到 GitHub Pages
+
+项目已经包含 `.github/workflows/deploy-pages.yml`。将代码推送到 GitHub 后：
+
+1. 打开仓库的 **Settings → Pages**。
+2. 在 **Build and deployment → Source** 中选择 **GitHub Actions**。
+3. 向 `main` 分支推送代码，或在 **Actions** 页面手动运行工作流。
+4. 部署完成后，地址通常为 `https://你的用户名.github.io/仓库名/`。
+
+静态构建使用相对资源路径，可同时适配根域名与 GitHub Pages 的仓库子路径。
+
+## 项目结构
+
+- `app/page.tsx`：四模块交互与本地分析逻辑
+- `app/demo-data.ts`：示例 JD、简历和脱敏面经知识库
+- `app/globals.css`：页面视觉与响应式样式
+- `static-main.tsx`：静态站点入口
+- `vite.static.config.ts`：GitHub Pages 静态构建配置
+- `.github/workflows/deploy-pages.yml`：自动部署工作流
+
+## 其他部署方式
+
+原有 Sites 构建仍然保留：
+
+```bash
 npm run dev
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
-
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+如果后续接入真实大模型、向量数据库或服务端文件处理，请把 API Key 放在后端环境变量中，不要写入 GitHub Pages 的前端代码。
