@@ -56,3 +56,5 @@ npm run build
 ```
 
 如果后续接入真实大模型、向量数据库或服务端文件处理，请把 API Key 放在后端环境变量中，不要写入 GitHub Pages 的前端代码。
+
+https://sherrytsr.github.io/autumn-ai-career-assistant/
